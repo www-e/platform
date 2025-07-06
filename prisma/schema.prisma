@@ -14,13 +14,20 @@ model User {
   studentId String   @unique
   password  String
   grade     Int      // 1, 2, or 3
+  role      UserRole @default(STUDENT) // Add this line
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
   // Relations
   enrollments Enrollment[]
+  examResults ExamResult[]
   
   @@map("users")
+}
+enum UserRole {
+  STUDENT
+  TEACHER
+  ADMIN
 }
 
 model Course {
@@ -66,4 +73,38 @@ model Enrollment {
   
   @@unique([userId, courseId])
   @@map("enrollments")
+}
+
+model Exam {
+  id          String   @id @default(cuid())
+  title       String
+  subject     String   // e.g., "رياضيات", "علوم", "لغة عربية"
+  maxScore    Int      // Maximum possible score
+  examDate    DateTime
+  grade       Int      // 1, 2, or 3 (which grade level)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  examResults ExamResult[]
+  
+  @@map("exams")
+}
+
+model ExamResult {
+  id         String   @id @default(cuid())
+  score      Int      // Student's actual score
+  percentage Float    // Calculated percentage
+  status     String   // "pass", "fail", "absent"
+  createdAt  DateTime @default(now())
+  
+  // Relations
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  examId String
+  exam   Exam   @relation(fields: [examId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, examId])
+  @@map("exam_results")
 }

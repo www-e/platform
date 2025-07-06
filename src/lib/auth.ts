@@ -15,7 +15,7 @@ export const authOptions: NextAuthOptions = {
       name: 'Credentials',
       credentials: {
         studentId: { label: 'Student ID', type: 'text' },
-        password:   { label: 'Password',   type: 'password' },
+        password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
         if (!credentials?.studentId || !credentials.password) {
@@ -25,9 +25,17 @@ export const authOptions: NextAuthOptions = {
           where: { studentId: credentials.studentId },
         })
         if (!user) throw new Error('Invalid credentials')
+        
         const valid = await bcrypt.compare(credentials.password, user.password)
         if (!valid) throw new Error('Invalid credentials')
-        return { id: user.id, name: user.name, studentId: user.studentId, grade: user.grade }
+        
+        return { 
+          id: user.id, 
+          name: user.name, 
+          studentId: user.studentId, 
+          grade: user.grade,
+          role: user.role // Add this line
+        }
       },
     }),
   ],
@@ -39,17 +47,13 @@ export const authOptions: NextAuthOptions = {
         id: user.id,
         studentId: (user as any).studentId,
         grade: (user as any).grade,
+        role: (user as any).role, // Add this line
       }
       return session
     },
   },
 }
 
-// 2. Create NextAuth handlers
 const nextAuthHandlers = NextAuth(authOptions)
-
-// 3. Export the `auth` middleware helper
 export const auth = nextAuthHandlers.auth
-
-// 4. Also export GET/POST handlers for your catch-all API route
 export const { GET, POST } = nextAuthHandlers
