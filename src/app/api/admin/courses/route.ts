@@ -47,3 +47,4 @@ export async function POST(request: Request) {
   })
   return NextResponse.json({ course }, { status: 201 })
 }
+
